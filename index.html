@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+    }
+    .modal {
+        transition: opacity 0.25s ease;
+    }
+</style>
+<body class="bg-gray-100">
+    <div class="max-w-md mx-auto min-h-screen bg-white shadow-lg">
+        <!-- Header -->
+        <header class="bg-blue-600 text-white p-4">
+            <h1 class="text-xl font-bold">पुस्तकालय प्रबंधन</h1>
+            <p class="text-sm">Library Management System</p>
+        </header>
+
+        <!-- Main Navigation -->
+        <nav class="bg-blue-500 p-2">
+            <div class="flex justify-around">
+                <button onclick="showSection('books')" class="text-white px-3 py-1 rounded hover:bg-blue-600">
+                    <i class="bi bi-book"></i> Books
+                </button>
+                <button onclick="showSection('borrowers')" class="text-white px-3 py-1 rounded hover:bg-blue-600">
+                    <i class="bi bi-people"></i> Borrowers
+                </button>
+                <button onclick="showSection('transactions')" class="text-white px-3 py-1 rounded hover:bg-blue-600">
+                    <i class="bi bi-arrow-left-right"></i> Transactions
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-4">
+            <!-- Books Section -->
+            <section id="books" class="section">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Book Inventory</h2>
+                    <button onclick="showAddBookModal()" class="bg-blue-500 text-white px-3 py-1 rounded">
+                        <i class="bi bi-plus"></i> Add Book
+                    </button>
+                </div>
+                <div id="booksList" class="space-y-2"></div>
+            </section>
+
+            <!-- Borrowers Section -->
+            <section id="borrowers" class="section hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Borrowers</h2>
+                    <button onclick="showAddBorrowerModal()" class="bg-blue-500 text-white px-3 py-1 rounded">
+                        <i class="bi bi-plus"></i> Add Borrower
+                    </button>
+                </div>
+                <div id="borrowersList" class="space-y-2"></div>
+            </section>
+
+            <!-- Transactions Section -->
+            <section id="transactions" class="section hidden">
+                <h2 class="text-lg font-bold mb-4">Transactions</h2>
+                <div id="transactionsList" class="space-y-2"></div>
+            </section>
+        </main>
+
+        <!-- Add Book Modal -->
+        <div id="addBookModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-4 rounded-lg w-80">
+                <h3 class="text-lg font-bold mb-4">Add New Book</h3>
+                <form id="addBookForm" class="space-y-3">
+                    <input type="text" id="bookTitle" placeholder="Book Title" class="w-full p-2 border rounded" required>
+                    <input type="text" id="bookAuthor" placeholder="Author" class="w-full p-2 border rounded" required>
+                    <input type="number" id="bookQuantity" placeholder="Quantity" class="w-full p-2 border rounded" required>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideAddBookModal()" class="px-3 py-1 bg-gray-300 rounded">Cancel</button>
+                        <button type="submit" class="px-3 py-1 bg-blue-500 text-white rounded">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Borrower Modal -->
+        <div id="addBorrowerModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-4 rounded-lg w-80">
+                <h3 class="text-lg font-bold mb-4">Add New Borrower</h3>
+                <form id="addBorrowerForm" class="space-y-3">
+                    <input type="text" id="borrowerName" placeholder="Name" class="w-full p-2 border rounded" required>
+                    <input type="tel" id="borrowerPhone" placeholder="Phone Number" class="w-full p-2 border rounded" required>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="hideAddBorrowerModal()" class="px-3 py-1 bg-gray-300 rounded">Cancel</button>
+                        <button type="submit" class="px-3 py-1 bg-blue-500 text-white rounded">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let books = JSON.parse(localStorage.getItem('books')) || [];
+        let borrowers = JSON.parse(localStorage.getItem('borrowers')) || [];
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+        // Show/Hide Sections
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        // Modal Functions
+        function showAddBookModal() {
+            document.getElementById('addBookModal').classList.remove('hidden');
+        }
+
+        function hideAddBookModal() {
+            document.getElementById('addBookModal').classList.add('hidden');
+        }
+
+        function showAddBorrowerModal() {
+            document.getElementById('addBorrowerModal').classList.remove('hidden');
+        }
+
+        function hideAddBorrowerModal() {
+            document.getElementById('addBorrowerModal').classList.add('hidden');
+        }
+
+        // Book Management
+        document.getElementById('addBookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const book = {
+                id: Date.now(),
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                quantity: parseInt(document.getElementById('bookQuantity').value),
+                available: parseInt(document.getElementById('bookQuantity').value)
+            };
+            books.push(book);
+            localStorage.setItem('books', JSON.stringify(books));
+            this.reset();
+            hideAddBookModal();
+            renderBooks();
+        });
+
+        function renderBooks() {
+            const booksList = document.getElementById('booksList');
+            booksList.innerHTML = books.map(book => `
+                <div class="border p-3 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold">${book.title}</h3>
+                            <p class="text-sm text-gray-600">by ${book.author}</p>
+                            <p class="text-sm">Available: ${book.available}/${book.quantity}</p>
+                        </div>
+                        <button onclick="showBorrowDialog(${book.id})" 
+                                class="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                                ${book.available === 0 ? 'disabled' : ''}>
+                            Borrow
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Borrower Management
+        document.getElementById('addBorrowerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const borrower = {
+                id: Date.now(),
+                name: document.getElementById('borrowerName').value,
+                phone: document.getElementById('borrowerPhone').value
+            };
+            borrowers.push(borrower);
+            localStorage.setItem('borrowers', JSON.stringify(borrowers));
+            this.reset();
+            hideAddBorrowerModal();
+            renderBorrowers();
+        });
+
+        function renderBorrowers() {
+            const borrowersList = document.getElementById('borrowersList');
+            borrowersList.innerHTML = borrowers.map(borrower => `
+                <div class="border p-3 rounded-lg shadow-sm">
+                    <h3 class="font-bold">${borrower.name}</h3>
+                    <p class="text-sm text-gray-600">${borrower.phone}</p>
+                </div>
+            `).join('');
+        }
+
+        // Transaction Management
+        function addTransaction(bookId, borrowerId) {
+            const book = books.find(b => b.id === bookId);
+            const borrower = borrowers.find(b => b.id === borrowerId);
+            
+            if (book && borrower && book.available > 0) {
+                const transaction = {
+                    id: Date.now(),
+                    bookId,
+                    borrowerId,
+                    borrowDate: new Date(),
+                    returned: false
+                };
+                transactions.push(transaction);
+                book.available--;
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('books', JSON.stringify(books));
+                renderTransactions();
+                renderBooks();
+            }
+        }
+
+        function returnBook(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (transaction && !transaction.returned) {
+                transaction.returned = true;
+                transaction.returnDate = new Date();
+                const book = books.find(b => b.id === transaction.bookId);
+                if (book) {
+                    book.available++;
+                }
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('books', JSON.stringify(books));
+                renderTransactions();
+                renderBooks();
+            }
+        }
+
+        function renderTransactions() {
+            const transactionsList = document.getElementById('transactionsList');
+            transactionsList.innerHTML = transactions.map(transaction => {
+                const book = books.find(b => b.id === transaction.bookId);
+                const borrower = borrowers.find(b => b.id === transaction.borrowerId);
+                return `
+                    <div class="border p-3 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold">${book?.title}</h3>
+                                <p class="text-sm text-gray-600">Borrowed by: ${borrower?.name}</p>
+                                <p class="text-sm">Date: ${new Date(transaction.borrowDate).toLocaleDateString()}</p>
+                            </div>
+                            ${!transaction.returned ? `
+                                <button onclick="returnBook(${transaction.id})" 
+                                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                                    Return
+                                </button>
+                            ` : `
+                                <span class="text-green-500">Returned</span>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initial render
+        renderBooks();
+        renderBorrowers();
+        renderTransactions();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
